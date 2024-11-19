@@ -9,7 +9,9 @@ from typing import Literal, Tuple
 
 from einops import rearrange
 
+from gfn.containers import Trajectories
 from gfn.actions import Actions
+from gfn.states import States
 from gfn.env import DiscreteEnv
 from gfn.gym.helpers.preprocessors import KHotPreprocessor, OneHotPreprocessor
 from gfn.preprocessors import EnumPreprocessor, IdentityPreprocessor
@@ -256,5 +258,26 @@ class HyperGrid2(DiscreteEnv):
         import matplotlib.pyplot as plt
         plt.imshow(rewards, cmap='viridis', interpolation='nearest')
         plt.colorbar()  # Add a color bar to show the scale
-        plt.title("Heatmap with Matplotlib")
+        plt.title("Heatmap")
         plt.show()        
+
+    def plot_samples(self, samples : DiscreteStates) -> None:
+        assert self.ndim == 2
+        import numpy as np
+        import matplotlib.pyplot as plt
+        x = samples.tensor[:,0,0]
+        y = samples.tensor[:,0,1]
+        heatmap, _, _ = np.histogram2d(x=x, y=y, bins=self.height, range=[[0, self.height-1], [0, self.height-1]])
+
+        # Plot the heatmap
+        plt.figure(figsize=(8, 6))
+        plt.imshow(heatmap.T, origin='lower', aspect='auto', cmap='viridis', interpolation='nearest')
+        plt.colorbar(label='Frequency')  # Color bar to indicate the frequency values
+        plt.title("Heatmap of Sample Frequency")
+        # plt.xlabel("X-axis")
+        # plt.ylabel("Y-axis")
+        plt.show()
+
+def get_final_states(trajectories: Trajectories, env) -> DiscreteStates:
+    final_states = env.States(torch.stack([traj.states[-2].tensor for traj in trajectories]))
+    return final_states
