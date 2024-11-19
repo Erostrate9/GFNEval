@@ -255,6 +255,34 @@ class HyperGrid2(DiscreteEnv):
     def terminating_states(self) -> DiscreteStates:
         return self.all_states
 
+    # def sample_states_from_distribution(self, nsamples) -> DiscreteStates:
+    #     states = []
+    #     for _ in range(nsamples):
+    #         randIndex = torch.randint(low=0, high=self.ncenters, size=(1,), device=self.device)
+    #         state = self.mvn_batch.sample()[randIndex].clamp_(min=0, max=self.height).round()
+    #         states.append(state)
+        
+    #     return self.States(torch.stack(states))
+    
+    def sample_states_from_distribution(self, nsamples) -> DiscreteStates:
+        # Generate random indices for centers in one operation
+        rand_indices = torch.randint(
+            low=0, high=self.ncenters, size=(nsamples,), device=self.device
+        )
+
+        # Sample from the multivariate normal distribution for all indices
+        sampled_states = self.mvn_batch.sample((nsamples,))
+
+        # Gather states using the random indices and process them
+        states = (
+            sampled_states[torch.arange(nsamples), rand_indices]
+            .clamp_(min=0, max=self.height)
+            .round()
+        )
+
+        # Return the sampled states
+        return self.States(states)
+
     def gen_heatmap(self) -> None:
         assert self.ndim == 2
         grid = self.build_grid()
@@ -270,8 +298,8 @@ class HyperGrid2(DiscreteEnv):
         assert self.ndim == 2
         import numpy as np
         import matplotlib.pyplot as plt
-        x = samples.tensor[:,0,1]
-        y = samples.tensor[:,0,0]
+        x = samples.tensor[:,1]
+        y = samples.tensor[:,0]
         heatmap, _, _ = np.histogram2d(x=x, y=y, bins=self.height, range=[[0, self.height-1], [0, self.height-1]])
 
         # Plot the heatmap
@@ -279,10 +307,11 @@ class HyperGrid2(DiscreteEnv):
         plt.imshow(heatmap.T, origin='lower', aspect='auto', cmap='viridis', interpolation='nearest')
         plt.colorbar(label='Frequency')  # Color bar to indicate the frequency values
         plt.title("Heatmap of Sample Frequency")
-        # plt.xlabel("X-axis")
-        # plt.ylabel("Y-axis")
         plt.show()
 
 def get_final_states(trajectories: Trajectories, env) -> DiscreteStates:
-    final_states = env.States(torch.stack([traj.states[-2].tensor for traj in trajectories]))
-    return final_states
+    # Extract the penultimate states for all trajectories
+    final_states = torch.stack([traj.states[-2].tensor for traj in trajectories]).squeeze(1)
+    
+    # Return as DiscreteStates object
+    return env.States(final_states)
