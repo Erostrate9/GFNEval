@@ -25,6 +25,7 @@ class HyperGrid2(DiscreteEnv):
         height: int = 4,
         seed: int = 1953,
         ncenters: int = 5,
+        centers: torch.tensor or None = None,
         device_str: Literal["cpu", "cuda"] = "cpu",
         preprocessor_name: Literal["KHot", "OneHot", "Identity", "Enum"] = "KHot",
     ):
@@ -72,9 +73,12 @@ class HyperGrid2(DiscreteEnv):
 
         state_shape = (self.ndim,)
 
-        # initialize weight centers
-        torch.manual_seed(self.seed)
-        self.centers = 0.6 * self.height * torch.rand((self.ncenters, self.ndim)) + 0.2 * self.height
+        if centers is not None:
+            self.centers = centers
+        else:
+            # initialize weight centers
+            torch.manual_seed(self.seed)
+            self.centers = 0.8 * self.height * torch.rand((self.ncenters, self.ndim)) + 0.1 * self.height
         # self.mvns = torch.distributions.MultivariateNormal()
         # generate an identity matrix
         self.covariances = torch.stack([torch.rand(1) * self.height / 2 * torch.eye(self.ndim) for _ in range(self.ncenters)])
@@ -257,6 +261,7 @@ class HyperGrid2(DiscreteEnv):
         rewards = self.reward(grid)
         import matplotlib.pyplot as plt
         plt.imshow(rewards, cmap='viridis', interpolation='nearest')
+        plt.gca().invert_yaxis()
         plt.colorbar()  # Add a color bar to show the scale
         plt.title("Heatmap")
         plt.show()        
@@ -265,8 +270,8 @@ class HyperGrid2(DiscreteEnv):
         assert self.ndim == 2
         import numpy as np
         import matplotlib.pyplot as plt
-        x = samples.tensor[:,0,0]
-        y = samples.tensor[:,0,1]
+        x = samples.tensor[:,0,1]
+        y = samples.tensor[:,0,0]
         heatmap, _, _ = np.histogram2d(x=x, y=y, bins=self.height, range=[[0, self.height-1], [0, self.height-1]])
 
         # Plot the heatmap
