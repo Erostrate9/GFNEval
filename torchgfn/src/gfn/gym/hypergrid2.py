@@ -303,7 +303,6 @@ class HyperGrid2(DiscreteEnv):
         heatmap, _, _ = np.histogram2d(x=x, y=y, bins=self.height, range=[[0, self.height-1], [0, self.height-1]])
 
         # Plot the heatmap
-        plt.figure(figsize=(8, 6))
         plt.imshow(heatmap.T, origin='lower', aspect='auto', cmap='viridis', interpolation='nearest')
         plt.colorbar(label='Frequency')  # Color bar to indicate the frequency values
         plt.title("Heatmap of Sample Frequency")
