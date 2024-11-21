@@ -1,5 +1,5 @@
 """
-Customized Hypergrid environment that is easy to sample from 
+Customized Hypergrid environment that is easy to sample from
 by Yue Zhang, Nov 18, 2024
 """
 import torch
@@ -48,7 +48,7 @@ class HyperGrid2(DiscreteEnv):
         self.height = height
         self.seed = seed
         self.ncenters = ncenters
-
+        self.device = torch.device(device_str)
         s0 = torch.zeros(ndim, dtype=torch.long, device=torch.device(device_str))
         sf = torch.full(
             (ndim,), fill_value=-1, dtype=torch.long, device=torch.device(device_str)
@@ -74,16 +74,17 @@ class HyperGrid2(DiscreteEnv):
         state_shape = (self.ndim,)
 
         if centers is not None:
-            self.centers = centers
+            self.centers = centers.to(self.device)
         else:
             # initialize weight centers
             torch.manual_seed(self.seed)
             self.centers = 0.8 * self.height * torch.rand((self.ncenters, self.ndim)) + 0.1 * self.height
+            self.centers = self.centers.to(self.device)
         # self.mvns = torch.distributions.MultivariateNormal()
         # generate an identity matrix
-        self.covariances = torch.stack([torch.rand(1) * self.height / 2 * torch.eye(self.ndim) for _ in range(self.ncenters)])
+        self.covariances = torch.stack([torch.rand(1) * self.height / 2 * torch.eye(self.ndim) for _ in range(self.ncenters)]).to(self.device)
         self.mvn_batch = torch.distributions.MultivariateNormal(self.centers, self.covariances)
-        
+
         # # For debugging
         # print(self.centers)
         # print(self.mvn_batch.covariance_matrix)
@@ -94,7 +95,7 @@ class HyperGrid2(DiscreteEnv):
         # log_prob = list(map(mvn_batch.log_prob, t))
         # prob = list(map(torch.exp, log_prob))
         # prob_sum = torch.tensor([p.sum(0) for p in prob])
-        
+
         # print(log_prob)
         # # print(torch.exp(log_prob))
         # print(prob)
@@ -165,7 +166,7 @@ class HyperGrid2(DiscreteEnv):
 
         Returns the reward as a tensor of shape `batch_shape`.
         """
-        final_states_raw = final_states.tensor
+        final_states_raw = final_states.tensor.to(self.device)
         final_states_shape = final_states_raw.shape
         mvn_batch = self.mvn_batch
 
@@ -175,7 +176,7 @@ class HyperGrid2(DiscreteEnv):
         assert reward.shape == final_states.batch_shape, \
                 f'Two shapes do not match: reward.shape={reward.shape},  final_states.batch_shape={final_states.batch_shape}.\n \
                 reward={reward}, final_states_raw={final_states_raw}'
-        return reward
+        return reward.to(self.device)
 
     def get_states_indices(self, states: DiscreteStates) -> torch.Tensor:
         """Get the indices of the states in the canonical ordering.
@@ -261,9 +262,9 @@ class HyperGrid2(DiscreteEnv):
     #         randIndex = torch.randint(low=0, high=self.ncenters, size=(1,), device=self.device)
     #         state = self.mvn_batch.sample()[randIndex].clamp_(min=0, max=self.height).round()
     #         states.append(state)
-        
+
     #     return self.States(torch.stack(states))
-    
+
     def sample_states_from_distribution(self, nsamples) -> DiscreteStates:
         # Generate random indices for centers in one operation
         rand_indices = torch.randint(
@@ -286,13 +287,13 @@ class HyperGrid2(DiscreteEnv):
     def gen_heatmap(self) -> None:
         assert self.ndim == 2
         grid = self.build_grid()
-        rewards = self.reward(grid)
+        rewards = self.reward(grid).detach().cpu()
         import matplotlib.pyplot as plt
         plt.imshow(rewards, cmap='viridis', interpolation='nearest')
         plt.gca().invert_yaxis()
         plt.colorbar()  # Add a color bar to show the scale
         plt.title("Heatmap")
-        plt.show()        
+        plt.show()
 
     def plot_samples(self, samples : DiscreteStates) -> None:
         assert self.ndim == 2
@@ -311,6 +312,6 @@ class HyperGrid2(DiscreteEnv):
 def get_final_states(trajectories: Trajectories, env) -> DiscreteStates:
     # Extract the penultimate states for all trajectories
     final_states = torch.stack([traj.states[-2].tensor for traj in trajectories]).squeeze(1)
-    
+
     # Return as DiscreteStates object
     return env.States(final_states)

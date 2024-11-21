@@ -229,6 +229,9 @@ class Sampler:
             ) & ~dones
             trajectories_dones[new_dones & ~dones] = step
             try:
+                print(f'new_dones: {new_dones.device}')
+                print(f'dones: {dones.device}')
+                print(f'states: {states.device if states.device else states.tensor.device}')
                 trajectories_log_rewards[new_dones & ~dones] = env.log_reward(
                     states[new_dones & ~dones]
                 )
