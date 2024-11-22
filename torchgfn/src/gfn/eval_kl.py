@@ -1,3 +1,7 @@
+'''
+  Empirical KL divergence calculator
+  By Yue Zhang, Nov 15, 2024
+'''
 import torch
 from torch import Tensor
 from torch import nn
@@ -28,14 +32,14 @@ def calc_KL_using_model(model, samples_p, samples_q, no_grad=False):
 
     # Compute the terms of the formula
     term_p = torch.mean(f_p)  # Expectation over P: E_P[f]
-    term_q = torch.log(torch.mean(torch.exp(torch.clamp(f_q, max=600, min=-600))))  # Log of expectation over Q: log(E_Q[e^f])
+    term_q = torch.log(torch.mean(torch.exp(torch.clamp(f_q, max=80, min=-80))))  # Log of expectation over Q: log(E_Q[e^f])
 
     # KL divergence
     kl_div = term_p - term_q
     return kl_div
 
 def compute_KL(p_star_sample : Tensor, p_hat_sample : Tensor,
-                layer_size=128, num_epochs=200, lr=0.001):
+                layer_size=128, num_epochs=200, lr=0.001, show_progress=False):
     # Ensure both samples have the same shape
     assert p_star_sample[0].shape == p_hat_sample[0].shape
     input_size = p_star_sample[0].numel()
@@ -56,7 +60,7 @@ def compute_KL(p_star_sample : Tensor, p_hat_sample : Tensor,
         loss.backward()
         optimizer.step()
 
-        if (epoch + 1) % 100 == 0:
+        if (epoch + 1) % 100 == 0 and show_progress:
             print(f"Epoch {epoch + 1}/{num_epochs}, KL Divergence Estimate: {kl_div:.4f}")
 
     return kl_div, phi
