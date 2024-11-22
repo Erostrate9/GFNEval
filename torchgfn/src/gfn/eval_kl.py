@@ -3,7 +3,6 @@
   By Yue Zhang, Nov 15, 2024
 '''
 import torch
-torch.set_default_dtype(torch.float64)
 from torch import Tensor
 from torch import nn
 from torch import optim
@@ -12,9 +11,9 @@ from torch import optim
 class PhiFunction(nn.Module):
     def __init__(self, input_size, layer_size) -> None:
         super(PhiFunction, self).__init__()
-        self.linear1 = nn.Linear(input_size, layer_size)
+        self.linear1 = nn.Linear(input_size, layer_size).to(torch.double)
         self.relu = nn.ReLU()
-        self.linear2 = nn.Linear(layer_size, 1)
+        self.linear2 = nn.Linear(layer_size, 1).to(torch.double)
 
     def forward(self, x):
         # x = x.view(-1)
