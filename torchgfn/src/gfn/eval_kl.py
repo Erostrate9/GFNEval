@@ -32,7 +32,7 @@ def calc_KL_using_model(model, samples_p, samples_q, no_grad=False):
 
     # Compute the terms of the formula
     term_p = torch.mean(f_p)  # Expectation over P: E_P[f]
-    term_q = torch.log(torch.mean(torch.exp(torch.clamp(f_q, max=80, min=-80))))  # Log of expectation over Q: log(E_Q[e^f])
+    term_q = torch.log(torch.mean(torch.exp(torch.clamp(f_q, max=695, min=-695))))  # Log of expectation over Q: log(E_Q[e^f])
 
     # KL divergence
     kl_div = term_p - term_q
