@@ -3,6 +3,7 @@
   By Yue Zhang, Nov 15, 2024
 '''
 import torch
+torch.set_default_dtype(torch.float64)
 from torch import Tensor
 from torch import nn
 from torch import optim
