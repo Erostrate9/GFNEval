@@ -1,5 +1,6 @@
 """
 Customized Hypergrid environment that is easy to sample from
+Modified from https://github.com/Tikquuss/GflowNets_Tutorial
 by Yue Zhang, Nov 18, 2024
 """
 import torch
@@ -255,15 +256,6 @@ class HyperGrid2(DiscreteEnv):
     @property
     def terminating_states(self) -> DiscreteStates:
         return self.all_states
-
-    # def sample_states_from_distribution(self, nsamples) -> DiscreteStates:
-    #     states = []
-    #     for _ in range(nsamples):
-    #         randIndex = torch.randint(low=0, high=self.ncenters, size=(1,), device=self.device)
-    #         state = self.mvn_batch.sample()[randIndex].clamp_(min=0, max=self.height).round()
-    #         states.append(state)
-
-    #     return self.States(torch.stack(states))
 
     def sample_states_from_distribution(self, nsamples) -> DiscreteStates:
         # Generate random indices for centers in one operation
