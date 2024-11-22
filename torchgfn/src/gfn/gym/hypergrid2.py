@@ -13,7 +13,7 @@ from einops import rearrange
 from gfn.containers import Trajectories
 from gfn.actions import Actions
 from gfn.states import States
-from gfn.env import DiscreteEnv
+from gfn.env import Env, DiscreteEnv
 from gfn.gym.helpers.preprocessors import KHotPreprocessor, OneHotPreprocessor
 from gfn.preprocessors import EnumPreprocessor, IdentityPreprocessor
 from gfn.states import DiscreteStates
@@ -301,9 +301,9 @@ class HyperGrid2(DiscreteEnv):
         plt.title("Heatmap of Sample Frequency")
         plt.show()
 
-def get_final_states(trajectories: Trajectories, env) -> DiscreteStates:
+def get_final_states(trajectories: Trajectories, env: Env) -> DiscreteStates:
     # Extract the penultimate states for all trajectories
-    final_states = torch.stack([traj.states[-2].tensor for traj in trajectories]).squeeze(1)
+    final_states = torch.stack([traj.states[-2].tensor.to(env.device) for traj in trajectories]).squeeze(1)
 
     # Return as DiscreteStates object
     return env.States(final_states)
