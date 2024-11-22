@@ -39,13 +39,15 @@ def calc_KL_using_model(model, samples_p, samples_q, no_grad=False):
     return kl_div
 
 def compute_KL(p_star_sample : Tensor, p_hat_sample : Tensor,
-                layer_size=128, num_epochs=200, lr=0.001, show_progress=False):
+                layer_size=128, num_epochs=200, lr=0.001, show_progress=False, 
+                device='cuda'):
     # Ensure both samples have the same shape
     assert p_star_sample[0].shape == p_hat_sample[0].shape
     input_size = p_star_sample[0].numel()
     # print(input_size)
     # The function to learn
     phi = PhiFunction(input_size=input_size, layer_size=layer_size)
+    phi = phi.to(device)
     optimizer = optim.Adam(phi.parameters(), lr=lr)
     # Learn the model
     for epoch in range(num_epochs):
