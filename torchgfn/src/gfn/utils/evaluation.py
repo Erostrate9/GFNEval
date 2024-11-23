@@ -145,7 +145,7 @@ def compute_log_prob_termination(env: DiscreteStates, terminal_state: DiscreteSt
     return memo[terminal_state_tensor] + transition_log_probs[-1][terminal_state_idx]
 
 # to compute the sampling probability wit monte_carlo
-def count_occurrences_with_monte_carlo(env: DiscreteStates, sampler, n_samples=10000):
+def count_occurrences_with_monte_carlo(env: DiscreteStates, sampler, n_samples=10000, show_progress=True):
     """
     Computes the sampling probability of a given terminal state using Monte Carlo.
 
@@ -163,7 +163,7 @@ def count_occurrences_with_monte_carlo(env: DiscreteStates, sampler, n_samples=1
     # Extract terminal states
     terminal_states = [traj.states[-2] for traj in trajectories]
     occurrences = TensorDict(int)
-    for state in tqdm(terminal_states, desc="Processing terminal_states"):
+    for state in tqdm(terminal_states, desc="Processing terminal_states") if show_progress else terminal_states:
         occurrences[state.tensor]+=1 
     return occurrences
 
@@ -223,7 +223,9 @@ def evaluate_GFNEvalS(gfn: GFlowNet, env: DiscreteStates, terminal_states, log_r
     return spearman_corr_termination, memo, transition_log_probs
 
 @timer
-def evaluate_GFNEvalS_with_monte_carlo(gfn: GFlowNet, env: DiscreteStates, terminal_states, log_rewards, n_samples=80000):
+def evaluate_GFNEvalS_with_monte_carlo(gfn: GFlowNet, env: DiscreteStates, 
+                                        terminal_states, log_rewards, n_samples=80000,
+                                        show_progress: bool=True):
     """Computes the sampling probability of given terminal states using Monte Carlo.
 
     Args:
@@ -241,15 +243,17 @@ def evaluate_GFNEvalS_with_monte_carlo(gfn: GFlowNet, env: DiscreteStates, termi
     start_time = time.time()
     sampler = Sampler(estimator=gfn.pf)
     # Generate a large number of samples as monte carlo to count occurrences of appeared terminal states
-    occurrences = count_occurrences_with_monte_carlo(env, sampler, n_samples=n_samples)
+    occurrences = count_occurrences_with_monte_carlo(env, sampler, n_samples=n_samples, show_progress=show_progress)
     #
     log_probs_monte_carlo = []
-    for terminal_state in tqdm(terminal_states, desc="Evaluating GFNEvalS with monte carlo"):
+
+    for terminal_state in tqdm(terminal_states, desc="Evaluating GFNEvalS with monte carlo") if show_progress else terminal_states:
         log_prob = compute_log_prob_with_monte_carlo(occurrences, terminal_state, n_samples)
         log_probs_monte_carlo.append(log_prob.detach().numpy())
     # Compute Spearman's Rank Correlation
     spearman_corr_monte_carlo, _ = spearmanr(log_probs_monte_carlo, log_rewards)
-    print(f"Spearman's Rank Correlation (Monte Carlo): {spearman_corr_monte_carlo}. MC sample number: {n_samples}. Runtime: {time.time()-start_time} seconds")
+    if show_progress:
+        print(f"Spearman's Rank Correlation (Monte Carlo): {spearman_corr_monte_carlo}. MC sample number: {n_samples}. Runtime: {time.time()-start_time} seconds")
     return spearman_corr_monte_carlo, occurrences, log_probs_monte_carlo
 
 
