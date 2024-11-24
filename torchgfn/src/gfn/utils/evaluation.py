@@ -183,9 +183,10 @@ def get_random_test_set(env: HyperGrid, n=100):
     return terminal_states, log_rewards
 
 def get_sampled_test_set(gfn, env, n=100):
-    sampler = Sampler(estimator=gfn.pf)
-    test_trajectories = sampler.sample_trajectories(env=env, n=n)
-    terminal_states = test_trajectories.last_states
+    # sampler = Sampler(estimator=gfn.pf)
+    # test_trajectories = sampler.sample_trajectories(env=env, n=n)
+    # terminal_states = test_trajectories.last_states
+    terminal_states = gfn.sample_terminating_states(env=env, n=n)
     log_rewards = torch.log(env.reward(terminal_states))
     return terminal_states, log_rewards
 
