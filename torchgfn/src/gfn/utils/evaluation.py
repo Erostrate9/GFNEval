@@ -242,7 +242,11 @@ def evaluate_GFNEvalS_with_monte_carlo(gfn: GFlowNet, env: DiscreteStates,
         log_probs_monte_carlo: log probability of given terminal states computed by MC
     """
     start_time = time.time()
-    sampler = Sampler(estimator=gfn.pf)
+    sampler=None
+    if gfn is FMGFlowNet:
+        sampler=Sampler(estimator=gfn.logF)
+    else:
+        sampler = Sampler(estimator=gfn.pf)
     # Generate a large number of samples as monte carlo to count occurrences of appeared terminal states
     occurrences = count_occurrences_with_monte_carlo(env, sampler, n_samples=n_samples, show_progress=show_progress)
     #
