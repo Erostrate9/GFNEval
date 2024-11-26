@@ -8,7 +8,7 @@ import numpy as np
 from scipy.stats import spearmanr
 from tqdm import tqdm
 
-from gfn.gflownet import GFlowNet
+from gfn.gflownet import GFlowNet,FMGFlowNet
 from gfn.gym import HyperGrid
 from gfn.modules import DiscretePolicyEstimator
 from gfn.samplers import Sampler
