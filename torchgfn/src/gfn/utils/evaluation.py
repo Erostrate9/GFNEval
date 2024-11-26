@@ -243,7 +243,7 @@ def evaluate_GFNEvalS_with_monte_carlo(gfn: GFlowNet, env: DiscreteStates,
         log_probs_monte_carlo: log probability of given terminal states computed by MC
     """
     start_time = time.time()
-<<<<<<< HEAD
+
     sampler=None
     if gfn is FMGFlowNet:
         sampler=Sampler(estimator=gfn.logF)
