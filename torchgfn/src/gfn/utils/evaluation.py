@@ -225,7 +225,8 @@ def evaluate_GFNEvalS(gfn: GFlowNet, env: DiscreteStates, terminal_states, log_r
 
 @timer
 def evaluate_GFNEvalS_with_monte_carlo(gfn: GFlowNet, env: DiscreteStates, 
-                                        terminal_states, log_rewards, n_samples=80000,
+                                        terminal_states, log_rewards, sampler=None,
+                                        n_samples=80000,
                                         show_progress: bool=True):
     """Computes the sampling probability of given terminal states using Monte Carlo.
 
@@ -242,6 +243,7 @@ def evaluate_GFNEvalS_with_monte_carlo(gfn: GFlowNet, env: DiscreteStates,
         log_probs_monte_carlo: log probability of given terminal states computed by MC
     """
     start_time = time.time()
+<<<<<<< HEAD
     sampler=None
     if gfn is FMGFlowNet:
         sampler=Sampler(estimator=gfn.logF)
