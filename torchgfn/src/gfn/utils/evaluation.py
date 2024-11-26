@@ -234,7 +234,7 @@ def evaluate_GFNEvalS(gfn: GFlowNet, env: DiscreteStates, terminal_states, log_r
 
 
 @timer
-def evaluate_GFNEvalS_with_monte_carlo(gfn: GFlowNet, key="TB", env: DiscreteStates,
+def evaluate_GFNEvalS_with_monte_carlo(gfn: GFlowNet,  env: DiscreteStates,
                                        terminal_states, log_rewards, sampler=None,
                                        n_samples=80000,
                                        show_progress: bool = True):
@@ -242,8 +242,6 @@ def evaluate_GFNEvalS_with_monte_carlo(gfn: GFlowNet, key="TB", env: DiscreteSta
 
     Args:
         gfn: An initialized Sampler using the forward policy estimator.
-        key: one of the following: "FM" (Flow Matching), "TB"(Trajectory Balance),
-    "SubTB"(Sub TB), "DB"(Detailed Balance).
         env: The HyperGrid environment instance.
         terminal_states: terminal states in test set.
         log_rewards: true rewards of terminal states in test set.
