@@ -245,6 +245,7 @@ def evaluate_GFNEvalS_with_monte_carlo(gfn: GFlowNet, env: DiscreteStates,
     start_time = time.time()
 
     sampler=None
+    print("Gfn Type is : ", gfn)
     if gfn is FMGFlowNet:
         sampler=Sampler(estimator=gfn.logF)
     else:
