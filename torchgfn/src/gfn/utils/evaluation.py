@@ -199,7 +199,7 @@ def get_sampled_test_set(gfn, env, n=100):
 
 
 @timer
-def evaluate_GFNEvalS(gfn: GFlowNet, env: DiscreteStates, terminal_states, log_rewards):
+def evaluate_GFNEvalS(gfn: GFlowNet, env: DiscreteStates, terminal_states, log_rewards, show_progress: bool = True):
     """Computes the GFNEvalS of given terminal states and log_rewards using Backtracking with memoization.
 
     Args:
@@ -221,14 +221,15 @@ def evaluate_GFNEvalS(gfn: GFlowNet, env: DiscreteStates, terminal_states, log_r
     log_probs_termination = []
     # Calculate the log probability and log reward for each terminal state
     # for traj in test_trajectories:
-    for terminal_state in tqdm(terminal_states, desc="Evaluating test set..."):
+    for terminal_state in tqdm(terminal_states, desc="Evaluating test set...") if show_progress else terminal_states:
         log_prob = compute_log_probability(env, gfn, terminal_state, memo, transition_log_probs)
         log_probs.append(log_prob.detach().numpy())
         log_prob_termination = compute_log_prob_termination(env, terminal_state, memo, transition_log_probs)
         log_probs_termination.append(log_prob_termination.detach().numpy())
     # 9 - Compute Spearman's Rank Correlation
     spearman_corr_termination, _ = spearmanr(log_probs_termination, log_rewards.detach())
-    print(
+    if show_progress:
+        print(
         f"Spearman's Rank Correlation (Modified GFNEvalS, including termination actions): {spearman_corr_termination}. Runtime: {time.time() - start_time} seconds.")
     return spearman_corr_termination, memo, transition_log_probs
 
